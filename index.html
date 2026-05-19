@@ -1,0 +1,595 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>مخططات كلاش أوف كلانس</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        body {
+            background: linear-gradient(135deg, #1e2a3a, #0f1724);
+            min-height: 100vh;
+            padding: 20px;
+            color: #e2e8f0;
+        }
+        .container {
+            max-width: 1300px;
+            margin: 0 auto;
+        }
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        .header h1 {
+            font-size: 2rem;
+            background: linear-gradient(135deg, #facc15, #ef4444);
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+        }
+        .btn {
+            background: #3b82f6;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 40px;
+            font-size: 1rem;
+            font-weight: bold;
+            color: white;
+            cursor: pointer;
+            margin: 5px;
+            transition: 0.2s;
+        }
+        .btn:hover {
+            transform: scale(1.02);
+            background: #2563eb;
+        }
+        .btn-danger {
+            background: #dc2626;
+        }
+        .filter-group {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        .filter-btn {
+            background: #334155;
+            padding: 8px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+        }
+        .filter-btn.active {
+            background: #facc15;
+            color: #0f1724;
+            font-weight: bold;
+        }
+        .cards-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 25px;
+            margin-top: 30px;
+        }
+        .card {
+            background: #1e2a36;
+            border-radius: 28px;
+            overflow: hidden;
+            border: 1px solid #334155;
+            transition: 0.2s;
+        }
+        .card:hover {
+            transform: translateY(-5px);
+        }
+        .card-img {
+            width: 100%;
+            height: 180px;
+            object-fit: cover;
+        }
+        .card-content {
+            padding: 15px;
+        }
+        .card-type {
+            display: inline-block;
+            background: #3b82f6;
+            padding: 4px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+        }
+        .card-desc {
+            margin: 10px 0;
+            color: #cbd5e1;
+        }
+        .rating-area {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 10px 0;
+        }
+        .rating-select {
+            background: #0f1724;
+            color: white;
+            border-radius: 20px;
+            padding: 5px;
+        }
+        .card-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .small-btn {
+            background: #334155;
+            padding: 6px 12px;
+            border-radius: 30px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            border: none;
+            color: white;
+        }
+        .fav-btn {
+            background: #facc15;
+            color: black;
+        }
+        .link-btn {
+            background: #10b981;
+            text-decoration: none;
+        }
+        .wizard-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.9);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            visibility: hidden;
+            opacity: 0;
+            transition: 0.2s;
+        }
+        .wizard-overlay.active {
+            visibility: visible;
+            opacity: 1;
+        }
+        .wizard-card {
+            background: #1e293b;
+            width: 90%;
+            max-width: 500px;
+            border-radius: 32px;
+            padding: 25px;
+        }
+        .step {
+            display: none;
+        }
+        .step.active-step {
+            display: block;
+        }
+        .step h3 {
+            color: #facc15;
+            margin-bottom: 20px;
+        }
+        .step input, .step textarea, .step select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 24px;
+            background: #0f1724;
+            color: white;
+            border: none;
+        }
+        .preview-img {
+            max-width: 100%;
+            border-radius: 20px;
+            margin: 10px 0;
+        }
+        .wizard-buttons {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+        }
+        .empty {
+            text-align: center;
+            padding: 60px;
+            color: #94a3b8;
+        }
+        .loading {
+            text-align: center;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <div class="header">
+        <h1>⚔️ مدير مخططات كلاش أوف كلانس</h1>
+        <p>أنشئ، عدل، قيم، وأضف للمفضلة | الصور محفوظة في السحاب ☁️</p>
+    </div>
+
+    <div style="text-align: center;">
+        <button class="btn" id="openWizardBtn">➕ إنشاء مخطط جديد</button>
+    </div>
+
+    <div class="filter-group">
+        <div class="filter-btn active" data-type="all">الكل</div>
+        <div class="filter-btn" data-type="حربي">⚔️ حربي</div>
+        <div class="filter-btn" data-type="دوري">🏅 دوري</div>
+        <div class="filter-btn" data-type="جمع كؤوس">🏆 جمع كؤوس</div>
+    </div>
+
+    <div id="cardsContainer" class="cards-grid">
+        <div class="loading">جاري التحميل...</div>
+    </div>
+</div>
+
+<!-- نافذة الخطوات -->
+<div id="wizardOverlay" class="wizard-overlay">
+    <div class="wizard-card">
+        <div id="step1" class="step active-step">
+            <h3>📸 الخطوة 1: اختر صورة</h3>
+            <input type="file" id="imageUpload" accept="image/*">
+            <div id="uploadStatus"></div>
+            <img id="step1Preview" class="preview-img" style="display:none;">
+        </div>
+        <div id="step2" class="step">
+            <h3>🔗 الخطوة 2: رابط اللعبة</h3>
+            <input type="url" id="gameLink" placeholder="https://link.clashofclans.com/...">
+        </div>
+        <div id="step3" class="step">
+            <h3>📝 الخطوة 3: معلومات المخطط</h3>
+            <textarea id="descText" rows="2" placeholder="وصف المخطط..."></textarea>
+            <select id="planType">
+                <option value="حربي">⚔️ حربي</option>
+                <option value="دوري">🏅 دوري</option>
+                <option value="جمع كؤوس">🏆 جمع كؤوس</option>
+            </select>
+            <input type="number" id="initialRating" min="0" max="10" value="5" placeholder="تقييم من 10">
+        </div>
+        <div class="wizard-buttons">
+            <button class="btn" id="prevStepBtn" disabled>السابق</button>
+            <button class="btn btn-primary" id="nextStepBtn">التالي</button>
+            <button class="btn" id="cancelWizardBtn">إلغاء</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    let plans = [];
+    let currentFilter = 'all';
+    let currentStep = 1;
+    let editModeId = null;
+    let uploadedImageUrl = null;
+    let isUploading = false;
+
+    // عناصر DOM
+    const wizardOverlay = document.getElementById('wizardOverlay');
+    const steps = [document.getElementById('step1'), document.getElementById('step2'), document.getElementById('step3')];
+    const prevBtn = document.getElementById('prevStepBtn');
+    const nextBtn = document.getElementById('nextStepBtn');
+    const cancelBtn = document.getElementById('cancelWizardBtn');
+    const openWizardBtn = document.getElementById('openWizardBtn');
+    const cardsContainer = document.getElementById('cardsContainer');
+    const imageUpload = document.getElementById('imageUpload');
+    const step1Preview = document.getElementById('step1Preview');
+    const uploadStatus = document.getElementById('uploadStatus');
+
+    // تحميل البيانات من localStorage
+    function loadFromStorage() {
+        const stored = localStorage.getItem('clash_plans_cloud');
+        if(stored) {
+            plans = JSON.parse(stored);
+        } else {
+            plans = [];
+        }
+        renderCards();
+    }
+
+    function saveToStorage() {
+        localStorage.setItem('clash_plans_cloud', JSON.stringify(plans));
+    }
+
+    // رفع الصورة إلى Vercel Blob
+    async function uploadImage(file) {
+        if (!file) return null;
+        
+        const formData = new FormData();
+        formData.append('image', file);
+        
+        uploadStatus.innerHTML = '⏳ جاري رفع الصورة إلى السحاب...';
+        uploadStatus.style.color = '#facc15';
+        
+        try {
+            const response = await fetch('/api/upload', {
+                method: 'POST',
+                body: formData
+            });
+            
+            const data = await response.json();
+            
+            if (data.url) {
+                uploadStatus.innerHTML = '✅ تم رفع الصورة بنجاح!';
+                uploadStatus.style.color = '#10b981';
+                return data.url;
+            } else {
+                uploadStatus.innerHTML = '❌ فشل الرفع: ' + (data.error || 'خطأ غير معروف');
+                uploadStatus.style.color = '#ef4444';
+                return null;
+            }
+        } catch (error) {
+            console.error('Upload error:', error);
+            uploadStatus.innerHTML = '❌ خطأ في الاتصال بالخادم';
+            uploadStatus.style.color = '#ef4444';
+            return null;
+        }
+    }
+
+    async function handleImageUpload() {
+        const file = imageUpload.files[0];
+        if (!file) {
+            alert('الرجاء اختيار صورة');
+            return false;
+        }
+        
+        // معاينة الصورة
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            step1Preview.src = e.target.result;
+            step1Preview.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+        
+        // رفع الصورة
+        isUploading = true;
+        const url = await uploadImage(file);
+        isUploading = false;
+        
+        if (url) {
+            uploadedImageUrl = url;
+            return true;
+        }
+        return false;
+    }
+
+    function resetWizard() {
+        currentStep = 1;
+        steps.forEach((step, idx) => {
+            if (idx === 0) step.classList.add('active-step');
+            else step.classList.remove('active-step');
+        });
+        prevBtn.disabled = true;
+        editModeId = null;
+        uploadedImageUrl = null;
+        imageUpload.value = '';
+        step1Preview.style.display = 'none';
+        step1Preview.src = '';
+        uploadStatus.innerHTML = '';
+        document.getElementById('gameLink').value = '';
+        document.getElementById('descText').value = '';
+        document.getElementById('planType').value = 'حربي';
+        document.getElementById('initialRating').value = '5';
+    }
+
+    function openWizard(planToEdit = null) {
+        resetWizard();
+        if (planToEdit) {
+            editModeId = planToEdit.id;
+            uploadedImageUrl = planToEdit.image;
+            if (uploadedImageUrl) {
+                step1Preview.src = uploadedImageUrl;
+                step1Preview.style.display = 'block';
+            }
+            document.getElementById('gameLink').value = planToEdit.link;
+            document.getElementById('descText').value = planToEdit.description;
+            document.getElementById('planType').value = planToEdit.type;
+            document.getElementById('initialRating').value = planToEdit.rating;
+        }
+        wizardOverlay.classList.add('active');
+    }
+
+    function closeWizard() {
+        wizardOverlay.classList.remove('active');
+        resetWizard();
+    }
+
+    function updateStepButtons() {
+        prevBtn.disabled = (currentStep === 1);
+        if (currentStep === 3) nextBtn.innerText = '💾 حفظ';
+        else nextBtn.innerText = 'التالي';
+    }
+
+    async function nextStep() {
+        if (currentStep === 1) {
+            if (!imageUpload.files.length && !uploadedImageUrl) {
+                alert('الرجاء اختيار صورة');
+                return;
+            }
+            if (imageUpload.files.length > 0 && !uploadedImageUrl) {
+                const success = await handleImageUpload();
+                if (!success) return;
+            }
+            goToNextStep();
+        }
+        else if (currentStep === 2) {
+            const link = document.getElementById('gameLink').value.trim();
+            if (!link) {
+                alert('يرجى إدخال رابط اللعبة');
+                return;
+            }
+            goToNextStep();
+        }
+        else if (currentStep === 3) {
+            if (isUploading) {
+                alert('الرجاء الانتظار حتى انتهاء رفع الصورة');
+                return;
+            }
+            
+            const link = document.getElementById('gameLink').value.trim();
+            const description = document.getElementById('descText').value.trim();
+            const type = document.getElementById('planType').value;
+            const rating = parseInt(document.getElementById('initialRating').value);
+            
+            if (!uploadedImageUrl) {
+                alert('الصورة مطلوبة');
+                return;
+            }
+            
+            if (editModeId) {
+                const index = plans.findIndex(p => p.id === editModeId);
+                if (index !== -1) {
+                    plans[index] = {
+                        ...plans[index],
+                        image: uploadedImageUrl,
+                        link: link,
+                        description: description,
+                        type: type,
+                        rating: rating
+                    };
+                }
+            } else {
+                plans.push({
+                    id: Date.now().toString(),
+                    image: uploadedImageUrl,
+                    link: link,
+                    description: description,
+                    type: type,
+                    rating: rating,
+                    isFavorite: false
+                });
+            }
+            saveToStorage();
+            renderCards();
+            closeWizard();
+        }
+    }
+
+    function goToNextStep() {
+        if (currentStep < 3) {
+            steps[currentStep-1].classList.remove('active-step');
+            currentStep++;
+            steps[currentStep-1].classList.add('active-step');
+            updateStepButtons();
+        }
+    }
+
+    function prevStep() {
+        if (currentStep > 1) {
+            steps[currentStep-1].classList.remove('active-step');
+            currentStep--;
+            steps[currentStep-1].classList.add('active-step');
+            updateStepButtons();
+        }
+    }
+
+    function renderCards() {
+        let filtered = [...plans];
+        if (currentFilter !== 'all') {
+            filtered = filtered.filter(p => p.type === currentFilter);
+        }
+        
+        if (filtered.length === 0) {
+            cardsContainer.innerHTML = `<div class="empty">📭 لا توجد مخططات<br>اضغط "إنشاء مخطط جديد" ✨</div>`;
+            return;
+        }
+        
+        cardsContainer.innerHTML = filtered.map(plan => `
+            <div class="card" data-id="${plan.id}">
+                <img class="card-img" src="${plan.image}" alt="مخطط" onerror="this.src='https://placehold.co/400x200?text=Image+Error'">
+                <div class="card-content">
+                    <div><span class="card-type">${plan.type}</span> ${plan.isFavorite ? '⭐️ مفضلة' : ''}</div>
+                    <div class="card-desc">${escapeHtml(plan.description) || 'لا يوجد وصف'}</div>
+                    <div class="rating-area">
+                        <span>التقييم: ${plan.rating}/10</span>
+                        <select class="rating-select" data-id="${plan.id}">
+                            ${[1,2,3,4,5,6,7,8,9,10].map(n => `<option value="${n}" ${plan.rating == n ? 'selected' : ''}>${n}</option>`).join('')}
+                        </select>
+                        <button class="small-btn fav-btn" data-fav="${plan.id}">${plan.isFavorite ? '💔 إزالة مفضلة' : '❤️ أضف للمفضلة'}</button>
+                    </div>
+                    <div class="card-actions">
+                        <a href="${plan.link}" target="_blank" class="small-btn link-btn" style="text-decoration:none;">🎮 رابط اللعبة ▶️</a>
+                        <button class="small-btn edit-plan" data-edit="${plan.id}">✏️ تعديل</button>
+                        <button class="small-btn btn-danger" data-del="${plan.id}">🗑️ حذف</button>
+                    </div>
+                </div>
+            </div>
+        `).join('');
+        
+        // إضافة المستمعات
+        document.querySelectorAll('.rating-select').forEach(select => {
+            select.addEventListener('change', (e) => {
+                const id = select.dataset.id;
+                const plan = plans.find(p => p.id === id);
+                if (plan) {
+                    plan.rating = parseInt(select.value);
+                    saveToStorage();
+                    renderCards();
+                }
+            });
+        });
+        
+        document.querySelectorAll('.edit-plan').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.dataset.edit;
+                const plan = plans.find(p => p.id === id);
+                if (plan) openWizard(plan);
+            });
+        });
+        
+        document.querySelectorAll('[data-del]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.dataset.del;
+                if (confirm('هل أنت متأكد من الحذف؟')) {
+                    plans = plans.filter(p => p.id !== id);
+                    saveToStorage();
+                    renderCards();
+                }
+            });
+        });
+        
+        document.querySelectorAll('[data-fav]').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                const id = btn.dataset.fav;
+                const plan = plans.find(p => p.id === id);
+                if (plan) {
+                    plan.isFavorite = !plan.isFavorite;
+                    saveToStorage();
+                    renderCards();
+                }
+            });
+        });
+    }
+    
+    function escapeHtml(str) {
+        if (!str) return '';
+        return str.replace(/[&<>]/g, function(m) {
+            if (m === '&') return '&amp;';
+            if (m === '<') return '&lt;';
+            if (m === '>') return '&gt;';
+            return m;
+        });
+    }
+    
+    // الأحداث
+    nextBtn.addEventListener('click', nextStep);
+    prevBtn.addEventListener('click', prevStep);
+    cancelBtn.addEventListener('click', closeWizard);
+    openWizardBtn.addEventListener('click', () => openWizard(null));
+    
+    document.querySelectorAll('.filter-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            currentFilter = btn.dataset.type;
+            renderCards();
+        });
+    });
+    
+    loadFromStorage();
+</script>
+</body>
+</html>
